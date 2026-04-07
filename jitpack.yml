@@ -1,0 +1,6 @@
+jdk:
+  - openjdk17
+install:
+  - curl -fsSL https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz | tar xz -C /tmp
+  - /tmp/apache-maven-3.9.9/bin/mvn -version
+  - /tmp/apache-maven-3.9.9/bin/mvn clean install -DskipTests
