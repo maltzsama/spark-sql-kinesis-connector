@@ -35,10 +35,8 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'corretto'
           cache: maven
-      - name: Build
-        run: mvn -B -DskipTests package
-      - name: Test
-        run: mvn -B test
+      - name: Build and test
+        run: mvn -B clean verify
       - name: Submit Dependency Snapshot
         if: github.event_name == 'push'
         uses: advanced-security/maven-dependency-submission-action@v4

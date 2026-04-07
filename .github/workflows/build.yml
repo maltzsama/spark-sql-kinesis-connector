@@ -1,0 +1,49 @@
+name: Publish Old Tags to GitHub Packages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish-all-tags:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: List all tags
+        id: list-tags
+        run: |
+          git tag -l > tags.txt
+          cat tags.txt
+
+      - name: Publish each tag
+        run: |
+          while IFS= read -r tag; do
+            echo "Processing tag: $tag"
+            git checkout $tag
+            
+            # Extrai versão sem o 'v'
+            VERSION=${tag#v}
+            
+            # Seta a versão no pom.xml
+            mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false
+            
+            # Publica no GitHub Packages
+            mvn clean deploy -DskipTests \
+              -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+            
+          done < tags.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
